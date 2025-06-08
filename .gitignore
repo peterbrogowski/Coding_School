@@ -1,0 +1,12 @@
+# Mac
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Sensitive data
+*.env
+config.js

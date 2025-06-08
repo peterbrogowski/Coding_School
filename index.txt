@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfusion Timer - Coding School Project</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        .timer {
+            font-size: 48px;
+            text-align: center;
+            color: #e74c3c;
+            font-family: 'Courier New', monospace;
+            margin: 30px 0;
+        }
+        
+        .controls {
+            text-align: center;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        /* Learning note section */
+        .learning-note {
+            background: #e8f6f3;
+            border-left: 4px solid #27ae60;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🫀 Perfusion Timer v1.0</h1>
+        
+        <div class="learning-note">
+            <strong>Today's Goal:</strong> Build a timer that tracks case duration
+        </div>
+        
+        <div class="timer" id="timer">00:00:00</div>
+        
+        <div class="controls">
+            <button onclick="startTimer()" id="startBtn">Start Case</button>
+            <button onclick="stopTimer()" id="stopBtn" disabled>Stop Case</button>
+        </div>
+    </div>
+    
+    <script>
+        // My first JavaScript variables!
+        let startTime = null;
+        let timerInterval = null;
+        
+        function startTimer() {
+            // Record when we started
+            startTime = new Date();
+            
+            // Update display every second
+            timerInterval = setInterval(updateDisplay, 1000);
+            
+            // Update buttons
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            
+            console.log('Timer started!', startTime);
+        }
+        
+        function stopTimer() {
+            // Stop the interval
+            clearInterval(timerInterval);
+            
+            // Calculate total time
+            const totalTime = new Date() - startTime;
+            const minutes = Math.floor(totalTime / 60000);
+            
+            alert(`Case duration: ${minutes} minutes`);
+            
+            // Reset buttons
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+        }
+        
+        function updateDisplay() {
+            const elapsed = new Date() - startTime;
+            
+            const hours = Math.floor(elapsed / 3600000);
+            const minutes = Math.floor((elapsed % 3600000) / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            
+            const display = 
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+            
+            document.getElementById('timer').textContent = display;
+        }
+    </script>
+</body>
+</html>
