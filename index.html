@@ -80,6 +80,7 @@
         <div class="controls">
             <button onclick="startTimer()" id="startBtn">Start Case</button>
             <button onclick="stopTimer()" id="stopBtn" disabled>Stop Case</button>
+        <button onclick="resetTimer()" id="resetBtn" disabled>🔄 Reset</button>
         </div>
     </div>
     
@@ -101,21 +102,41 @@
             
             console.log('Timer started!', startTime);
         }
-        
+        function resetTimer() {
+    // Clear the interval if running
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+    
+    // Reset all variables
+    startTime = null;
+    timerInterval = null;
+    
+    // Reset the display
+    document.getElementById('timer').textContent = '00:00:00';
+    
+    // Reset button states
+    document.getElementById('startBtn').disabled = false;
+    document.getElementById('stopBtn').disabled = true;
+    document.getElementById('resetBtn').disabled = true;
+    
+    console.log('Timer reset!');
+}
         function stopTimer() {
-            // Stop the interval
-            clearInterval(timerInterval);
-            
-            // Calculate total time
-            const totalTime = new Date() - startTime;
-            const minutes = Math.floor(totalTime / 60000);
-            
-            alert(`Case duration: ${minutes} minutes`);
-            
-            // Reset buttons
-            document.getElementById('startBtn').disabled = false;
-            document.getElementById('stopBtn').disabled = true;
-        }
+    // Stop the interval
+    clearInterval(timerInterval);
+    
+    // Calculate total time
+    const totalTime = new Date() - startTime;
+    const minutes = Math.floor(totalTime / 60000);
+    
+    alert(`Case duration: ${minutes} minutes`);
+    
+    // Reset buttons
+    document.getElementById('startBtn').disabled = false;
+    document.getElementById('stopBtn').disabled = true;
+    document.getElementById('resetBtn').disabled = false;  // ← ADD THIS LINE!
+}
         
         function updateDisplay() {
             const elapsed = new Date() - startTime;
