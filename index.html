@@ -3,40 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfusion Timer - Coding School Project</title>
+    <title>Perfusion Timer with Event Log</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            max-width: 800px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
         }
-        
         .container {
             background: white;
-            padding: 30px;
             border-radius: 10px;
+            padding: 30px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        
         h1 {
             color: #2c3e50;
             text-align: center;
+            margin-bottom: 30px;
         }
-        
-        .timer {
+        .timer-display {
             font-size: 48px;
             text-align: center;
             color: #e74c3c;
+            font-weight: bold;
+            margin: 20px 0;
             font-family: 'Courier New', monospace;
-            margin: 30px 0;
         }
-        
         .controls {
             text-align: center;
+            margin: 20px 0;
         }
-        
         button {
             background: #3498db;
             color: white;
@@ -46,111 +44,169 @@
             border-radius: 5px;
             cursor: pointer;
             margin: 5px;
+            transition: background 0.3s;
         }
-        
         button:hover {
             background: #2980b9;
         }
-        
         button:disabled {
             background: #95a5a6;
             cursor: not-allowed;
         }
-        
-        /* Learning note section */
-        .learning-note {
-            background: #e8f6f3;
-            border-left: 4px solid #27ae60;
+        .btn-stop {
+            background: #e74c3c;
+        }
+        .btn-stop:hover {
+            background: #c0392b;
+        }
+        .event-log {
+            background: #ecf0f1;
             padding: 15px;
-            margin: 20px 0;
+            border-radius: 5px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .event-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #bdc3c7;
             font-size: 14px;
+        }
+        .export-btn {
+            background: #9b59b6;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .export-btn:hover {
+            background: #8e44ad;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🫀 Perfusion Timer v1.0</h1>
+        <h1>🫀 Perfusion Timer & Event Logger</h1>
         
-        <div class="learning-note">
-            <strong>Today's Goal:</strong> Build a timer that tracks case duration
-        </div>
-        
-        <div class="timer" id="timer">00:00:00</div>
+        <div class="timer-display" id="timer">00:00:00</div>
         
         <div class="controls">
-            <button onclick="startTimer()" id="startBtn">Start Case</button>
-            <button onclick="stopTimer()" id="stopBtn" disabled>Stop Case</button>
-      <button onclick="resetTimer()" id="resetBtn" disabled>🔄 Reset</button>
+            <button id="startBtn" onclick="startTimer()">▶️ Start</button>
+            <button id="stopBtn" onclick="stopTimer()" disabled class="btn-stop">⏹️ Stop</button>
+            <button id="resetBtn" onclick="resetTimer()" disabled>🔄 Reset</button>
         </div>
+        
+        <div class="event-log" id="eventLog">
+            <strong>Event Log:</strong><br>
+            <div id="events">No events yet...</div>
+        </div>
+        
+        <button class="export-btn" onclick="exportLog()">📋 Export Event Log</button>
     </div>
-    
+
     <script>
-        // My first JavaScript variables!
         let startTime = null;
         let timerInterval = null;
+        let events = [];
         
         function startTimer() {
-            // Record when we started
             startTime = new Date();
             
-            // Update display every second
-            timerInterval = setInterval(updateDisplay, 1000);
+            // Log the start event
+            logEvent('Timer Started');
             
-            // Update buttons
+            // Update button states
             document.getElementById('startBtn').disabled = true;
             document.getElementById('stopBtn').disabled = false;
+            document.getElementById('resetBtn').disabled = true;
             
-            console.log('Timer started!', startTime);
+            // Start updating the display
+            timerInterval = setInterval(updateTimer, 1000);
         }
-        function resetTimer() {
-    // Clear the interval if running
-    if (timerInterval) {
-        clearInterval(timerInterval);
-    }
-    
-    // Reset all variables
-    startTime = null;
-    timerInterval = null;
-    
-    // Reset the display
-    document.getElementById('timer').textContent = '00:00:00';
-    
-    // Reset button states
-    document.getElementById('startBtn').disabled = false;
-    document.getElementById('stopBtn').disabled = true;
-    document.getElementById('resetBtn').disabled = true;
-    
-    console.log('Timer reset!');
-}
-        function stopTimer() {
-    // Stop the interval
-    clearInterval(timerInterval);
-    
-    // Calculate total time
-    const totalTime = new Date() - startTime;
-    const minutes = Math.floor(totalTime / 60000);
-    
-    alert(`Case duration: ${minutes} minutes`);
-    
-    // Reset buttons
-    document.getElementById('startBtn').disabled = false;
-    document.getElementById('stopBtn').disabled = true;
-    document.getElementById('resetBtn').disabled = false;  // ← ADD THIS LINE!
-}
         
-        function updateDisplay() {
-            const elapsed = new Date() - startTime;
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                
+                // Log the stop event with duration
+                const duration = formatTime(new Date() - startTime);
+                logEvent(`Timer Stopped - Duration: ${duration}`);
+                
+                // Update button states
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('resetBtn').disabled = false;
+            }
+        }
+        
+        function resetTimer() {
+            // Log the reset event
+            logEvent('Timer Reset');
             
-            const hours = Math.floor(elapsed / 3600000);
-            const minutes = Math.floor((elapsed % 3600000) / 60000);
-            const seconds = Math.floor((elapsed % 60000) / 1000);
+            // Reset display and variables
+            document.getElementById('timer').textContent = '00:00:00';
+            startTime = null;
+            events = [];
+            updateEventDisplay();
             
-            const display = 
-                String(hours).padStart(2, '0') + ':' +
-                String(minutes).padStart(2, '0') + ':' +
-                String(seconds).padStart(2, '0');
+            // Update button states
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('resetBtn').disabled = true;
+        }
+        
+        function updateTimer() {
+            if (startTime) {
+                const elapsed = new Date() - startTime;
+                document.getElementById('timer').textContent = formatTime(elapsed);
+            }
+        }
+        
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
             
-            document.getElementById('timer').textContent = display;
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function logEvent(eventName) {
+            const timestamp = new Date().toLocaleString();
+            events.push({
+                time: timestamp,
+                event: eventName
+            });
+            updateEventDisplay();
+        }
+        
+        function updateEventDisplay() {
+            const eventsDiv = document.getElementById('events');
+            if (events.length === 0) {
+                eventsDiv.innerHTML = 'No events yet...';
+            } else {
+                eventsDiv.innerHTML = events.map(e => 
+                    `<div class="event-item">${e.time} - ${e.event}</div>`
+                ).join('');
+                // Auto-scroll to bottom
+                eventsDiv.scrollTop = eventsDiv.scrollHeight;
+            }
+        }
+        
+        function exportLog() {
+            if (events.length === 0) {
+                alert('No events to export!');
+                return;
+            }
+            
+            const logText = 'PERFUSION TIMER EVENT LOG\n\n' + 
+                          events.map(e => `${e.time} - ${e.event}`).join('\n');
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(logText).then(() => {
+                alert('Event log copied to clipboard!');
+            }).catch(err => {
+                alert('Failed to copy to clipboard. Please try again.');
+            });
         }
     </script>
 </body>
